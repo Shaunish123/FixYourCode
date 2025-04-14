@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FixYourCode - AI-powered Code Analysis & Improvement</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+</head>
+<body>
+    <%- include("partials/header") -%>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="error-message">
+            <p><%= error %></p>
+        </div>
+    <% } %>
+
+    <div class="code-input-container">
+        <h2>Paste your code</h2>
+        <form action="/analyze" method="POST">
+            <div class="form-group">
+                <label for="language">Language (optional):</label>
+                <select name="language" id="language">
+                    <option value="">Auto-detect</option>
+                    <% languages.forEach(lang => { %>
+                        <option value="<%= lang %>" <%= (typeof selectedLanguage !== 'undefined' && selectedLanguage === lang) ? 'selected' : '' %>><%= lang.charAt(0).toUpperCase() + lang.slice(1) %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="form-group">
+                <textarea id="code" name="code" rows="10" placeholder="Paste your code here..." required><%= typeof originalCode !== 'undefined' ? originalCode : '' %></textarea>
+            </div>
+            <button type="submit" class="btn">Analyze Code</button>
+        </form>
+    </div>
+
+    <% if (typeof codeResult !== 'undefined' && codeResult) { %>
+        <div class="results-container" id="results">
+            <h2>Analysis Results</h2>
+            
+            <% if (codeResult.error) { %>
+                <div class="error-message">
+                    <p><%= codeResult.error %></p>
+                    <pre><code><%= codeResult.rawResponse %></code></pre>
+                </div>
+            <% } else { %>
+                <div class="language-detection">
+                    <h3>Detected Language:</h3>
+                    <p><strong><%= codeResult.language %></strong></p>
+                </div>
+
+                <% if (codeResult.isCorrect) { %>
+                    <div class="success-message">
+                        <h3>Great job! Your code is well-structured.</h3>
+                        <p>Your code already follows best practices and is well-written.</p>
+                    </div>
+                <% } %>
+
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="code-tab">Code & Suggestions</button>
+                    <button class="tab-btn" data-tab="explanation-tab">Line-by-Line Explanation</button>
+                    <button class="tab-btn" data-tab="learn-tab">Learning Resources</button>
+                </div>
+
+                <div class="tab-content active" id="code-tab">
+                    <div class="code-section">
+                        <h3><%= codeResult.isCorrect ? 'Your Code' : 'Improved Code' %></h3>
+                        <pre><code class="code-block <%= codeResult.language %>"><%= codeResult.fix %></code></pre>
+                    </div>
+
+                    <div class="suggestions-section">
+                        <h3>Suggestions</h3>
+                        <ul>
+                            <% codeResult.suggestions.forEach(suggestion => { %>
+                                <li><%= suggestion %></li>
+                            <% }); %>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="explanation-tab">
+                    <div class="descriptions-section">
+                        <h3>Code Explanation</h3>
+                        <ol>
+                            <% codeResult.descriptions.forEach(description => { %>
+                                <li><%= description %></li>
+                            <% }); %>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="learn-tab">
+                    <div class="learn-section">
+                        <h3>Learning Resources</h3>
+                        <ul>
+                            <% codeResult.learn.forEach(topic => { %>
+                                <li>
+                                    <strong><%= topic.text || topic %></strong>
+                                    <% if (topic.url) { %>
+                                        - <a href="<%= topic.url %>" target="_blank" rel="noopener noreferrer">Click here to learn more</a>
+                                    <% } %>
+                                </li>
+                            <% }); %>
+                        </ul>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    <% } %>
+
+    <%- include("partials/footer") -%>
+
+    <script src="/js/script.js"></script>
+</body>
+</html> 
